@@ -7,6 +7,7 @@
 
 #include "DT_Battery.h"
 
+
 /*
  * Simply populates the battery_state struct
  */
@@ -14,7 +15,7 @@ void do_battery_diagnostics(){
 
 	//get basic stats
 	battery.last_sample_time = millis();
-	battery.volts = analogRead(BATTERY);
+	battery.volts = analogRead(ANALOG_BATTERY_INPUT);
 
 	//to be used later in for automatically setting nominal voltage
 	if(battery.volts > battery.known_highest_voltage)
@@ -25,7 +26,7 @@ void do_battery_diagnostics(){
 	battery.right_motor_current_draw = analogRead(ANALOG_RIGHT_MOTOR_CURRENT_INPUT);
 
 	//set error if recharing issue arises
-	if(battery.is_recharging && battery._initial_recharing_time + CHARGER_TIME_OUT > battery.last_sample_time){
+	if(battery.is_recharging && battery._initial_recharging_time + CHARGER_TIME_OUT > battery.last_sample_time){
 		battery.recharing_error = 1;
 		_disable_charging();
 	}
@@ -109,7 +110,7 @@ void _disable_charger(){
 void _start_charger(){
 
 	//init re-charge info used in checking for re-charge issues
-	battery._initial_recharing_time = millis();
+	battery._initial_recharging_time = millis();
 	battery._starting_voltage = battery.volts;
 
 	pinMode(CHARGER, OUTPUT);

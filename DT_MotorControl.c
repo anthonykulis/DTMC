@@ -31,5 +31,5 @@ void accelerate(int target){
 	int old_t = millis();
 	int t = old_t;
 
-	while(current_left_speed < LEFT_MOTOR_MAX_SPEED || current_right_speed)
+	while(current_left_speed < LEFT_MOTOR_MAX_SPEED || current_right_speed);
 }

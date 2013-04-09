@@ -1,3 +1,4 @@
+
 /*
  * DT_Servos.h
  *
@@ -22,9 +23,9 @@
 #define S5 10
 #define S6 12
 
-static servo_attached[NUM_SERVOS] = {0,};
+static int servo_attached[NUM_SERVOS] = {0,};
 
-Servo servos[NUM_SERVOS];
+;
 
 void attach_servos(int* servos_to_start);
 void write_to_servo(int position, int value);

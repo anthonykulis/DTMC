@@ -6,7 +6,6 @@
  */
 
 
-
 #include "DT_Servos.h"
 #include "DT_Battery.h"
 #include "DT_MotorControl.h"
@@ -37,8 +36,8 @@ SoftwareSerial debugger(SS_RX, SS_TX)
 #define DEBUGGING_MOTOR_CONTROL 1
 #define DEBUGGING_SERVO_CONTROL 1
 
-enum MODE { RC, SERIAL, I2C };
-
+//enum { RC, SERIAL, I2C } MODE;
+int SERIAL = 0;
 /*
  * Set your desired mode to above enumeration
  */
@@ -49,19 +48,20 @@ static int control_mode = SERIAL;
  */
 static int loop_delay = 0;
 
+
 void setup(){
 
 	/*
 	 * Change to set your desired pinouts to PWM
 	 */
 	int attach_these[NUM_SERVOS] = {1, 0, 0, 0, 0, 0, 1};
-	attach_servos(&attach_these);
+	attach_servos(attach_these);
 
 	/*
 	 * Initially disable charging mode. Will be caught
 	 * in runtime loop
 	 */
-	disable_charger();
+	_disable_charger();
 
 	if(control_mode == SERIAL) init_serial();
 
@@ -81,7 +81,7 @@ void loop(){
 
 		motors_shutdown();
 
-		if(is_batter_in_dangerous_state()) set_overload_timeout();
+		if(is_battery_in_dangerous_state()) set_overload_timeout();
 		return;
 	}
 
@@ -98,17 +98,13 @@ void loop(){
 		case RC: handle_rc(); break;
 		case SERIAL: handle_serial(); break;
 		case I2C: handle_i2c(); break;
-		case DEFAULT: motors_shutdown();
+		DEFAULT: motors_shutdown();
 
 	}
 
-	if(DEBUGGING_ENABLED) debug();
+	//if(DEBUGGING_ENABLED) debugger();
 
-	delay(loop_delay);
-
-}
-
-void debug(){
-
+	//delay(loop_delay);
 
 }
+

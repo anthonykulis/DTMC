@@ -8,6 +8,7 @@
 #ifndef DT_BATTERY_H_
 #define DT_BATTERY_H_
 
+#include "Arduino.h"
 
 #define CHARGER 13
 enum CHARGER_STATE { NOT_CHARGING, CHARGING };
@@ -29,7 +30,7 @@ enum CHARGER_STATE { NOT_CHARGING, CHARGING };
 #define MAX_CURRENT_DRAW 800
 
 //time in millis that the motor will be shutdown before it is re-enabled
-#define OVER_LOAD_TIME_OUT 100
+#define OVERLOAD_TIME_OUT 100
 
 
 
@@ -40,12 +41,12 @@ typedef struct {
 	int volts;
 	int left_motor_current_draw;
 	int right_motor_current_draw;
-	int is_recharging = NOT_CHARGING;
-	int recharing_error = 0;
-	int _initial_recharging_time = 0;
-	int _starting_voltage = 0;
-	int _overload_timeout_start = 0;
-	int _in_overload_cooldown = 0;
+	int is_recharging;
+	int recharing_error;
+	int _initial_recharging_time;
+	int _starting_voltage;
+	int _overload_timeout_start;
+	int _in_overload_cooldown;
 
 } battery_state;
 
