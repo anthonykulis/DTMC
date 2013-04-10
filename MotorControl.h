@@ -1,25 +1,25 @@
 /*
- * Runner.h
+ * MotorControl.h
  *
  *  Created on: Apr 8, 2013
  *      Author: kulis
  */
 
-#ifndef RUNNER_H_
-#define RUNNER_H_
+#ifndef MOTORCONTROL_H_
+#define MOTORCONTROL_H_
 
 #include "Register.h"
 
 
-#define RUNNER_FORWARD 0
-#define RUNNER_REVERSE 1
+#define MOTORCONTROL_FORWARD 0
+#define MOTORCONTROL_REVERSE 1
 
-class Runner {
+class MotorControl {
 
 
 public:
 
-	Runner(Register *r);
+	MotorControl(Register *r);
 	void update();
 
 	inline void setMode(int MODE){ _mode = MODE; }
@@ -42,4 +42,4 @@ private:
 
 };
 
-#endif /* RUNNER_H_ */
+#endif /* MOTORCONTROL_H_ */

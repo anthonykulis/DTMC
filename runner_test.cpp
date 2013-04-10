@@ -7,7 +7,7 @@
 
 
 #include <iostream>
-#include "Runner.h"
+#include "MotorControl.h"
 #include "Register.h"
 
 using namespace std;
@@ -24,23 +24,23 @@ int main(){
 	rr = r.open(RIGHT_REVERSE, REG_MASTER_MODE);
 	fb = r.open(FULL_BRAKE, REG_MASTER_MODE);
 
-	Runner runner(&r);
+	MotorControl mc(&r);
 
-	runner.update();
+	mc.update();
 
 	//set speed full forward
 	r.write(lf, 0xFF);
 	r.write(rf, 0Xff);
-	runner.update();
+	mc.update();
 
 	r.write(lf, 0x00);
 	r.write(rf, 0x00);
 	r.write(lr, 0xFF);
 	r.write(rr, 0xFF);
-	runner.update();
+	mc.update();
 
 	r.write(lr, 0x00);
 	r.write(rr, 0x00);
-	runner.update();
+	mc.update();
 
 }
