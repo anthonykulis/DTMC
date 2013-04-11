@@ -1,16 +1,18 @@
 /*
- * Runner.cpp
+ * MotorControl.cpp
  *
  *
  *  Created on: Apr 8, 2013
  *      Author: kulis
+ *
+ *  Current state: Tested, but needs setting motor speeds and braking written, as well as implementation of acceleration and safety checks
  */
-#include "Runner.h"
+#include "MotorControl.h"
 #include <iostream>
 
 using namespace std;
 
-Runner::Runner(Register *r){
+MotorControl::MotorControl(Register *r){
 
 	_mode = -1;
 	_r = r;
@@ -25,7 +27,7 @@ Runner::Runner(Register *r){
 
 }
 
-void Runner::update(){
+void MotorControl::update(){
 
 	//todo: perform any safety check
 
@@ -40,7 +42,7 @@ void Runner::update(){
 	/*
 	 * Get L & R speeds from registers
 	 */
-	_ld = RUNNER_FORWARD;
+	_ld = MotorControl_FORWARD;
 	_ls = _r->read(_lf);
 
 
@@ -49,7 +51,7 @@ void Runner::update(){
 		_ld = !_ld;
 	}
 
-	_rd = RUNNER_FORWARD;
+	_rd = MotorControl_FORWARD;
 	_rs = _r->read(_rf);
 
 	if(_rs == 0x00){
@@ -69,17 +71,17 @@ void Runner::update(){
 	return;
 }
 
-void Runner::_set_speed(int left, int right){
+void MotorControl::_set_speed(int left, int right){
 	cout << "Left Speed: " << left << " Right Speed: " << right << endl;
 }
-void Runner::_set_direction(int left, int right){
+void MotorControl::_set_direction(int left, int right){
 	cout << "Left Direction: " << left << " Right Direction: " << right << endl;
 }
-void Runner::_brake(){
+void MotorControl::_brake(){
 	cout << "Braking" << endl;
 }
 
-void Runner::_read_rc(){}
-void Runner::_read_serial(){}
+void MotorControl::_read_rc(){}
+void MotorControl::_read_serial(){}
 
 

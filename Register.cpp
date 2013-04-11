@@ -3,6 +3,8 @@
  *
  *  Created on: Apr 8, 2013
  *      Author: kulis
+ *
+ *  Current state: Pretty fully tested. Added two public bool functions that still need to be tested.
  */
 
 #include "Register.h"
@@ -131,6 +133,13 @@ regd_t Register::close(int reg_descriptor){
 	return rd;
 }
 
+bool Register::is_control_register(unsigned char REGISTER){
+	return _is_allowed_reg(REGISTER) > 0;
+}
+
+bool Register::is_read_register(unsigned char REGISTER){
+	return !_is_allowed_reg(REGISTER) && is_allowed_reg(REGISTER);
+}
 
 //be sure to define default values as you populate control values
 void Register::_populate(){

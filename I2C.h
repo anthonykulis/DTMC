@@ -7,7 +7,7 @@
 
 #ifndef I2C_H_
 #define I2C_H_
-
+#include "Arduino.h"
 
 class I2C {
 
@@ -16,8 +16,14 @@ public:
 
 private:
 
-	Register _r;
+	Register *_r;
+	void _resetI2C();
+	regd_t _i2c;
+	unsigned char _i2c_add;
+	void _receiveHandler(int numBytes);
+	void _requestHandler();
+	bool _is_wire_active;
 
-}
+};
 
 #endif /* I2C_H_ */

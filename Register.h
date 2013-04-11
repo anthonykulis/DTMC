@@ -60,7 +60,8 @@ public:
 	unsigned char read(regd_t reg_descriptor);
 	int write(int reg_descriptor, unsigned char value);
 	regd_t close(regd_t reg_descriptor);
-
+    bool is_control_reg(unsigned char REGISTER);
+    bool is_read_reg(unsigned char REGISTER);
 
 private:
 
