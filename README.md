@@ -42,21 +42,34 @@ Class List:
   are Wire.h, Wire.cpp, and supporting classes. Please keep these with the I2C package to simplify compiling. Also note,
   some features of I2C detailed in the header and Register class have not yet been fully implemented. As of 12 April 2013,
   you can pass messages to this slave and get a response w/o the need to write your own callbacks. As an example, for
-  control messages to the default I2c address (0x25), say LEFT_FORWARD (0x00) and setting speed to 255, a typical message might look like:
+  control messages to the default I2c address (0x25), say LEFT_FORWARD (0x00) and setting speed to 255, a typical message 
+  might look like Code Block A. To read say the battery voltage (requires a high and low read), ones code may look similar 
+  to Code Block B. Please note, Code Block B is one of those features I havent tested yet (12 Apr 2013) is this read. I assume my math in the 
+  class was correct, but I never trust my math until I see the answer!
   
+        //Code Block A
         Wire.beginTransmission(0x25);
         Wire.write(ox00);
         Wire.write(0xFF);
         Wire.endTransmission();
 
-    To read say the battery voltage (requires a high and low read), ones code may look similar to:
-    
+
+        //Code Blcok B
         Wire.write(0x08);
         unsigned char h_val = Wire.read();
         Wire.low(0x09);
         unsigned char l_val = Wire.read();
         
         int volts = h_val << 8 | l_val;
+
+  3) Battery - This class has an extern variable of SystemBattery and provides 3 primary functions: Battery::do_battery_diagnotics();
+  Battery::start_charger(); and Battery::end_charging(). Each function name should be self documenting, yet, I will still 
+  explain. Battery::do_battery_diagnostics() samples a handleful of aspects, like time, voltage, etc, to help in system
+  stability. The voltage of the battery is automatically updated in the Register classes, READ_BATTERY_LEVEL_HIGH (0x08) and
+  READ_BATTERY_LEVEL_LOW (0x09) and can be accessed in the above Code Block B. Battery::start_charging() does just that, 
+  flips the pin allowing the uC to recharge the battery while also flaging Registers' RECHARGING variable. While charging, any message sent to move the system is defered
+  to a braking call and hence ignored. Also, in a naive approach, if the voltage doesnt change in 30 seconds, an 
+  error is place in Register's RECHARGING_ERROR. Battery::end_charging() also does what it says, ends the charging cycle.
+  
+  4)
     
-    Please note, one of those features I havent tested yet (12 Apr 2013) is this read. I assume my math in the 
-    class was correct, but I never trust my math until I see the answer!
