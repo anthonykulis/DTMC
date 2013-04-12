@@ -4,13 +4,14 @@
  *  Created on: Apr 8, 2013
  *      Author: kulis
  *
- *  Current state: Not tested.
+ *  Current state: Tested. Ready.
  */
 
 #include "I2C.h"
 #include "Register.h"
 #include "Arduino.h"
 #include "Wire.h"
+
 
 void receiveHandler(int numBytes){
 

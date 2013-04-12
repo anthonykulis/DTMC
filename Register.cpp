@@ -4,10 +4,11 @@
  *  Created on: Apr 8, 2013
  *      Author: kulis
  *
- *  Current state: Pretty fully tested. Added two public bool functions that still need to be tested.
+ *  Current state: Tested. Ready.
  */
 #include "Arduino.h"
 #include "Register.h"
+
 
 
 
@@ -178,9 +179,13 @@ unsigned char Register::_is_allowed_reg(unsigned char REGISTER){
 			(SET_I2C_ADDRESS == REGISTER) ||
 			(USE_ACCELERATION == REGISTER) ||
 			(SET_CONTROL_MODE == REGISTER) ||
-			(READ_BATTERY_LEVEL == REGISTER) ||
+			(READ_BATTERY_LEVEL_HIGH == REGISTER) ||
+			 READ_BATTERY_LEVEL_LOW == REGISTER ||
 			(READ_LEFT_MOTOR_CURRENT == REGISTER) ||
-			(READ_RIGHT_MOTOR_CURRENT == REGISTER);
+			(READ_RIGHT_MOTOR_CURRENT == REGISTER) ||
+			 RECHARGING == REGISTER ||
+			 RECHARGING_ERROR == REGISTER ||
+			 SET_AUTO_RECHARGE == REGISTER;
 }
 
 
@@ -194,7 +199,8 @@ int Register::_is_rw_reg(unsigned char REGISTER){
 			FULL_BRAKE == REGISTER ||
 			SET_I2C_ADDRESS == REGISTER ||
 			USE_ACCELERATION == REGISTER ||
-			SET_CONTROL_MODE == REGISTER;
+			SET_CONTROL_MODE == REGISTER ||
+			SET_AUTO_RECHARGE == REGISTER;
 }
 
 

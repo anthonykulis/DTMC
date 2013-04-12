@@ -9,6 +9,7 @@
  */
 #include "MotorControl.h"
 #include "Arduino.h"
+#include "Battery.h"
 
 using namespace std;
 
@@ -16,60 +17,87 @@ MotorControl::MotorControl(){
 
 	_mode = -1;
 	_r = &DataRegister;
+	_b = &SystemBattery;
 
-	_rf = _r->open(RIGHT_FORWARD, REG_READ_ONLY);
-	_lf = _r->open(LEFT_FORWARD, REG_READ_ONLY);
-	_rr = _r->open(RIGHT_REVERSE, REG_READ_ONLY);
-	_lr = _r->open(LEFT_REVERSE, REG_READ_ONLY);
-	_br = _r->open(FULL_BRAKE, REG_READ_ONLY);
-	_a = _r->open(USE_ACCELERATION, REG_READ_ONLY);
+	//i2c only needs read only, but serial and rc will need writes
+	//if only using i2c, you may wish to change this to read only
+	//if you wish to use these registers in you loop() event, do not
+	//call this class if possible or modifiy it so that these are 
+	//opened only when needed and closed otherwise
+	_rf = _r->open(RIGHT_FORWARD, REG_READ_WRITE);
+	_lf = _r->open(LEFT_FORWARD, REG_READ_WRITE);
+	_rr = _r->open(RIGHT_REVERSE, REG_READ_WRITE);
+	_lr = _r->open(LEFT_REVERSE, REG_READ_WRITE);
+	_br = _r->open(FULL_BRAKE, REG_READ_WRITE);
+	_a = _r->open(USE_ACCELERATION, REG_READ_WRITE);
 	
 	_prev_left = _prev_right = _prev_left_dir = _prev_right_dir = 0;
 
 }
 
+/**
+ * This function provides the basics of the loop() event. 
+ * It is intended to handle all the major features of motor control
+ * while allowing the user to use their loop() event to handle 
+ * other uC features. If wanting to control the motor themselves,
+ * a user should not call this function
+ */ 
 void MotorControl::update(){
+
+	_b->do_battery_diagnostics();
+	
+	if(_b->is_battery_recharging()) return _brake();
 
 	//todo: perform any safety check
 	
+	//how to handle control messages - note, even if not using i2c, user still can access read registers from i2c
 	switch(_r->read(SET_CONTROL_MODE)){
 
+		//do nothing, handled on interupts
 		case I2C_MODE: break;
+
+		//to implement
 		case RC_MODE: _read_rc(); break;
+
+		//to implement
 		case SERIAL_MODE: _read_serial(); break;
-		default: return; //error getting mode
+
+		//error getting mode
+		default: return; 
 	}
 
-	/*
-	 * Get L & R speeds from registers
-	 */
+	//first check for full break
+	int b = _r->read(_br);	
+	if(b){
+		Serial.print("Read FULL_BRAKE ");
+		Serial.println(b);		
+		return _brake();
+	}
+	
+	//get left forward speed
 	_ld = MOTORCONTROL_FORWARD;
 	_ls = _r->read(_lf);
 
-
+	//no left forward speed? check left reverse then
 	if(!_ls){
 		_ls = _r->read(_lr);
 		_ld = !_ld;
 	}
-
+	
+	//get right forward speed
 	_rd = MOTORCONTROL_FORWARD;
 	_rs = _r->read(_rf);
 
+	//no right forward? get right reverse then
 	if(!_rs){
 		_rs = _r->read(_rr);
 		_rd = !_rd;
 	}
-
-
-	if(!_ls && !_rs){
-		_brake();
-		return;
-	}
-
+		
+	//set the direction and speed of each motor
 	_set_direction((int) _ld, (int) _rd);
 	_set_speed((int) _ls, (int) _rs);
-
-	return;
+	
 }
 
 void MotorControl::_set_speed(int left, int right){

@@ -9,6 +9,7 @@
 #define BATTERY_H_
 
 #include "Arduino.h"
+#include "Register.h"
 
 #define CHARGER_PORT 13
 #define CHARGER_TIMEOUT 300000
@@ -40,6 +41,7 @@ public:
 	void end_charging();
 
 private:
+	Register *_r;
 	int _last_sample_time;
 	int _known_highest_voltage;
 	int _volts;
@@ -47,6 +49,10 @@ private:
 	bool _has_recharging_error;
 	int _initial_recharging_time;
 	int _starting_voltage;
+	bool _auto_recharge;
+	void _update_ac();
 
 };
+
+extern Battery SystemBattery;
 #endif /* BATTERY_H_ */

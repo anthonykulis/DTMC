@@ -10,6 +10,7 @@
 
 #include "Register.h"
 #include "Arduino.h"
+#include "Battery.h"
 
 #define MOTORCONTROL_FORWARD 0
 #define MOTORCONTROL_REVERSE 1
@@ -30,6 +31,8 @@ private:
 	int _mode;
 
 	Register *_r;
+	Battery *_b;
+
 	regd_t _rf, _lf, _lr, _rr, _br, _a;
 
 	unsigned char _ls, _rs;
