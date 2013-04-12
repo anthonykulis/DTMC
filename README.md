@@ -118,5 +118,5 @@ RIGHT_FORWARD are equal to 0x00. Any left over values in these registers may pre
 
 -
 
-If you have any questions, please email. Also, pay attention to my commits, this README may become out-of-date
-as I add more functionality or remove others.
+If you have any questions, please email. My email is just my first name, then dot, then last name at gmail. You can get my name
+from above (account name). Also, pay attention to my commits, this README may become out-of-date as I add more functionality or remove others.
