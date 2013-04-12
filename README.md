@@ -95,7 +95,7 @@ alread explained previously. Yet for movement, the fisrt thing check is the FULL
 system regardless of what is in either XXXX_FORWARD or XXXX_REVERSE register. Next, it checks the LEFT_FORWARD regsiter
 for a value. If 0x00, it then proceeds on checking the LEFT_REVERSE register. The value found (even if both are 0x00) is
 the movement control applied. This repeats for the right registers also. So, be careful to handle your registers properly.
-If you wish to go from braking to full reverse, you will need to make sure FULL_BRAKE == ox00 and both LEFT_FORWARD and 
+If you wish to go from braking to full reverse, you will need to make sure FULL_BRAKE == 0x00 and both LEFT_FORWARD and 
 RIGHT_FORWARD are equal to 0x00. Any left over values in these registers may preempt your intentions. Here is a code example:
 
 -
@@ -115,7 +115,8 @@ RIGHT_FORWARD are equal to 0x00. Any left over values in these registers may pre
         Wire.write(RIGHT_FORWARD, 0X00);
         Wire.write(LEFT_REVERSE, 0XFF);
         Wire.write(RIGHT_REVERSE, 0XFF);
-- 
+
+-
 
 If you have any questions, please email. Also, pay attention to my commits, this README may become out-of-date
 as I add more functionality or remove others.
