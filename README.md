@@ -33,7 +33,7 @@ Class List:
   all other classes. See the header file for the addressing scheme. As of 12 April 2013, the .gnumeric file is out-of-date.
   This class is externed to DataRegister and is available upon include of header file. It provides 2 types of registers,
   read only and read-write. It also mimics file io such that there are open, write, read, and close calls. Also, there are
-  3 open flags: REG_READ_ONLY, REG_READ_WRITE, and REG_MASTER_MODE. Only on handle can access a register at a time, and
+  3 open flags: REG_READ_ONLY, REG_READ_WRITE, and REG_MASTER_MODE. Only one handle can access a register at a time, and
   only registers available for read/write can be opened by REG_READ_WRITE. REG_MASTER_MODE is intended for the I2C class 
   and allows reading and writing even if hooked by a handle of REG_READ_ONLY or REG_READ_WRITE. As of 12 April 2013,
   most registers have been tested and should perform nicely. 
