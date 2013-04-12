@@ -49,7 +49,7 @@ Class List:
   
         //Code Block A
         Wire.beginTransmission(0x25);
-        Wire.write(ox00);
+        Wire.write(0x00);
         Wire.write(0xFF);
         Wire.endTransmission();
 
