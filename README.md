@@ -73,7 +73,7 @@ Class List:
   READ_BATTERY_LEVEL_LOW (0x09) and can be accessed in the above Code Block B. Battery::start_charging() does just that, 
   flips the pin allowing the uC to recharge the battery while also flaging Registers' RECHARGING variable. While charging, any message sent to move the system is defered
   to a braking call and hence ignored. Also, in a naive approach, if the voltage doesnt change in 30 seconds, an 
-  error is place in Register's RECHARGING_ERROR. Battery::end_charging() also does what it says, ends the charging cycle.
+  error is place in Register's RECHARGING_ERROR and Battery::end_charging() is called. Battery::end_charging() also does what it says, ends the charging cycle.
   
   4) Safety - This class is not yet implemented (12 April 2013). It will provide the basics of the sample code provided
   by the developers of the uC. 
