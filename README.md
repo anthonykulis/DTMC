@@ -43,8 +43,8 @@ Class List:
   some features of I2C detailed in the header and Register class have not yet been fully implemented. As of 12 April 2013,
   you can pass messages to this slave and get a response w/o the need to write your own callbacks. As an example, for
   control messages to the default I2c address (0x25), say LEFT_FORWARD (0x00) and setting speed to 255, a typical message 
-  might look like Code Block A. To read say the battery voltage (requires a high and low read), ones code may look similar 
-  to Code Block B. Please note, Code Block B is one of those features I havent tested yet (12 Apr 2013) is this read. I assume my math in the 
+  might look like Code Block A. To read the battery voltage (requires a high and low read), one's code may look similar 
+  to Code Block B. Please note, Code Block B is one of those features I havent tested yet (12 Apr 2013). I assume my math in the 
   class was correct, but I never trust my math until I see the answer!
   
         //Code Block A
