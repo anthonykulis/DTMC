@@ -58,8 +58,7 @@ Class List:
         Wire.write(0x08);
         unsigned char h_val = Wire.read();
         Wire.low(0x09);
-        unsigned char l_val = Wire.read();
-        
+        unsigned char l_val = Wire.read();        
         int volts = h_val << 8 | l_val;
 
   3) Battery - This class has an extern variable of SystemBattery and provides 3 primary functions: Battery::do_battery_diagnotics();
@@ -71,5 +70,46 @@ Class List:
   to a braking call and hence ignored. Also, in a naive approach, if the voltage doesnt change in 30 seconds, an 
   error is place in Register's RECHARGING_ERROR. Battery::end_charging() also does what it says, ends the charging cycle.
   
-  4)
+  4) Safety - This class is not yet implemented (12 April 2013). It will provide the basics of the sample code provided
+  by the developers of the uC. 
+  
+  5) MotorControl - This class provides 4 basic functions. MotorControl::update(), as mentioned earlier, emulates what a 
+  developer might do in their loop() event. It checks for battery recharging, then saftey, then reads the Register's 
+  registers related to moving the chassis, and calls either MotorControl::_brake() or MotorControl::_set_speed() and 
+  MotorControl::_set_direction(); Obviously these methods are private at this point in development. I intend on making them
+  public when I complete the RC and Serial control functionality. Also, since I am developing a rather complex system
+  for the Thumper chassis, I currently have the functionality of those control functions set to only print the 
+  values they receive. Of course, this will be handled later.
+  
+  
+A final note on these classes, if you wish, you may utilize them how you wish. MotorControl, once the control functions
+become public, will be a simple wrapper to writing each pin value independently. So if you wish, this is the basics of the
+events behind this series of classes. First, the I2C has interupt handlers, so whenever an I2C event occurs, Register is
+updated. Throughout the main event loop, first, the system is checked for battery tasks that supercede moving. This was
+alread explained previously. Yet for movement, the fisrt thing check is the FULL_BRAKE register. If not 0x00, it stops the 
+system regardless of what is in either XXXX_FORWARD or XXXX_REVERSE register. Next, it checks the LEFT_FORWARD regsiter
+for a value. If 0x00, it then proceeds on checking the LEFT_REVERSE register. The value found (even if both are 0x00) is
+the movement control applied. This repeats for the right registers also. So, be careful to handle your registers properly.
+If you wish to go from braking to full reverse, you will need to make sure FULL_BRAKE == ox00 and both LEFT_FORWARD and 
+RIGHT_FORWARD are equal to 0x00. Any left over values in these registers may preempt your intentions. Here is a code example:
+
+        //drive normally
+        Wire.write(LEFT_FORWARD, 0x7F);
+        Wire.write(RIGHT_FORWARD, 0x7F);
+
+        //a FULL BRAKE event occurs
+        if(event){
+            Wire.write(FULL_BRAKE, 0x01);
+            wait_for_event_to_clear();
+        }
+
+        //Go from full brake to full reverse
+        Wire.write(FULL_BRAKE, 0x00);
+        Wire.write(LEFT_FORWARD, 0X00);
+        Wire.write(RIGHT_FORWARD, 0X00);
+        Wire.write(LEFT_REVERSE, 0XFF);
+        Wire.write(RIGHT_REVERSE, 0XFF);
     
+
+If you have any questions, please email. Also, pay attention to my commits, this README may become out-of-date
+as I add more functionality or remove others.
