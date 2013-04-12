@@ -1,0 +1,142 @@
+/*
+ * tt.c
+ *
+ *  Created on: Apr 4, 2013
+ *      Author: kulis
+ */
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <pthread.h>
+
+pthread_mutex_t t1_lock;
+pthread_mutex_t t2_lock;
+pthread_cond_t t1_cond;
+pthread_cond_t t2_cond;
+pthread_attr_t attr;
+pthread_cond_t t1_done;
+pthread_mutex_t runner;
+
+struct thread_data {
+
+	int id;
+	int phase;
+	int period;
+	int relative_deadline;
+	int execution_time;
+	int complete;
+
+};
+
+struct thread_data t1, t2;
+
+void* j1_task(void *thread_arg){
+
+	while(1){
+
+		pthread_mutex_lock(&runner);
+
+		pthread_cond_wait(&t1_cond, &t1_lock);
+
+		t1.complete = 0;
+
+
+		fprintf(stdout, "t1 Sleeping\n");
+		usleep(t1.execution_time);
+
+		t1.complete = 1;
+
+
+		fprintf(stdout, "t1 Done\n");
+
+		//pthread_yield();
+
+		pthread_mutex_unlock(&runner);
+	}
+
+	return NULL;
+}
+
+void* j2_task(void *thread_arg){
+
+	while(1){
+
+
+		pthread_mutex_lock(&runner);
+		fprintf(stdout, "run\n");
+		pthread_cond_wait(&t2_cond, &t2_lock);
+
+		t2.complete = 0;
+
+
+		fprintf(stdout, "t2 Sleeping\n");
+		usleep(t2.execution_time);
+
+		t2.complete = 1;
+
+		fprintf(stdout, "t2 Done\n");
+		pthread_mutex_unlock(&runner);
+	}
+
+	return NULL;
+}
+
+void* sched(void *thread_arg){
+
+	int t1_tick = 0;
+	int t2_tick = 0;
+
+	while(1){
+
+		if(!t1_tick){
+			pthread_cond_signal(&t1_cond);
+		}
+
+		if(!t2_tick){
+			pthread_cond_signal(&t2_cond);
+		}
+
+		usleep(1000);
+		t1_tick = (t1_tick + 1) % (t1.period + t1.phase);
+		t2_tick = (t2_tick + 1) % (t2.period + t2.phase);
+
+	}
+
+	pthread_exit(NULL);
+	return NULL;
+}
+
+int main(){
+
+	pthread_attr_init(&attr);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+	pthread_mutex_init(&t1_lock, NULL);
+	pthread_mutex_init(&t2_lock, NULL);
+	pthread_mutex_init(&runner, NULL);
+
+	t1.execution_time = 1000;
+	t1.id = 1;
+	t1.period = 2000;
+	t1.phase = 0;
+	t1.relative_deadline = 2000;
+
+	t2.execution_time = 2000;
+	t2.id = 2;
+	t2.period = 4000;
+	t2.phase = 0;
+	t2.relative_deadline = 1000;
+
+	pthread_t j1, sch, j2;
+
+	int tsa = pthread_create(&j1, &attr, j1_task, (void *) &t1);
+	int tsb = pthread_create(&j2, &attr, j2_task, (void *) &t2);
+	int sche = pthread_create(&sch, &attr, sched, (void *) &t1);
+
+
+ while(1);
+    void* status;
+    pthread_join(sche, &status);
+    pthread_join(tsa, &status);
+	pthread_exit(NULL);
+}

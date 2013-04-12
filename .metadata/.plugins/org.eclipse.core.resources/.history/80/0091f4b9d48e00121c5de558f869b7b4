@@ -1,0 +1,67 @@
+/*
+ * pid_test.c
+ *
+ *  Created on: Mar 17, 2013
+ *      Author: kulis
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/time.h>
+#include <time.h>
+#include <unistd.h>
+
+#include "pid.h"
+
+int main(int argc, char** argv){
+
+	PID* pids;
+	pids = init(1);
+
+	PID pid = *pids;
+
+	pid.feed_direction = FORWARD;
+	pid.goal = 5.0;
+	pid.interval = 10;
+	pid.kd = 1;
+	pid.ki = 5;
+	pid.kp = 1;
+	pid.max = 255;
+	pid.min = -255;
+	pid.is_paused = 0;
+
+
+	srandom(time(NULL));
+	struct timeval now;
+
+	gettimeofday(&now, NULL);
+	unsigned long start = now.tv_usec / 1000;
+	unsigned long end = start + 10000;
+	pid.goal = ((end - start) / 2) + start;
+
+	while(start < end){
+
+		pid.input = start;
+		run(&pid);
+		fprintf(stdout, "Tick start: %li -- Input: %.02f -- Output: %.02f\n", start, pid.input, pid.output);
+
+		usleep(10* 1000);
+		start += 10;
+	}
+
+	start = end;
+	end = start + 10000;
+
+	while(start < end){
+
+		pid.input = pid.goal;
+		if(start < 5400 || start > 6000) pid.is_paused = 1;
+		else pid.is_paused = 0;
+		run(&pid);
+		fprintf(stdout, "Tick start: %li -- Input: %.02f -- Output: %.02f\n", start, pid.input, pid.output);
+
+		usleep(100* 1000);
+		start += 100;
+	}
+	return EXIT_SUCCESS;
+}

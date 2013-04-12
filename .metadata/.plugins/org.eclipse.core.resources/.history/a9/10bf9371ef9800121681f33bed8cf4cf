@@ -1,0 +1,77 @@
+/*
+ * graph.c
+ *
+ *  Created on: Mar 29, 2013
+ *      Author: kulis
+ */
+
+#include "graph.h"
+
+int _g_stack_ref = 0;
+
+int _g_heading = NORTH;
+int get_sr(){ return _g_stack_ref; }
+int get_hd(){ return _g_heading; }
+
+void _g_push(int north, int east, int west, int south){
+
+	int gsr = _g_stack_ref;
+
+	Graph[gsr].north = north;
+	Graph[gsr].south = south;
+	Graph[gsr].east = east;
+	Graph[gsr].west = west;
+
+	Graph[gsr].north_visited = 0;
+	Graph[gsr].south_visited = 0;
+	Graph[gsr].east_visited = 0;
+	Graph[gsr].west_visited = 0;
+
+	Graph[gsr].right_of_north = &Graph[gsr].east;
+	Graph[gsr].right_of_east = &Graph[gsr].south;
+	Graph[gsr].right_of_south = &Graph[gsr].west;
+	Graph[gsr].right_of_west = &Graph[gsr].north;
+
+	_g_stack_ref = (_g_stack_ref + 1) % _G_STACK_SIZE;
+
+}
+
+
+int _get_right(int dir){
+
+	//impossible to happen? just to make sure not an infinite loop
+	int pass = 0;
+
+	//skip to next possible direction
+	while(!possible_directions[++dir] && !pass){
+
+		//check on infinite loop
+		if(dir == _g_heading - 1) pass = !pass;
+
+	}
+
+	//dead end
+	if(dir == _g_heading) return _g_heading;
+
+	if(visited_directions[dir]) _get_right(dir);
+
+	return dir;
+
+}
+
+
+void _g_pop(){ _g_stack_ref--; }
+
+int get_next_direction(int east, int north, int west, int south){
+
+	//sanity check
+	if(north > 1 || east > 1 || west > 1 || south > 1 ||
+	   north < 0 || east < 0 || west < 0 || south < 0) return -1;
+
+	//new node
+	_g_push(north, east, west, south);
+	_g_node *g = &Graph[_g_stack_ref];
+
+
+
+}

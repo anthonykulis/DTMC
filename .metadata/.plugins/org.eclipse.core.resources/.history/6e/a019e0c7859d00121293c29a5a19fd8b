@@ -1,0 +1,108 @@
+/*
+ * tt.c
+ *
+ *  Created on: Apr 4, 2013
+ *      Author: kulis
+ */
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <pthread.h>
+
+pthread_mutex_t t1_lock;
+pthread_cond_t t1_cond;
+pthread_attr_t attr;
+pthread_cond_t t1_done;
+pthread_mutex_t t1_d_lock;
+
+
+struct thread_data {
+
+	int id;
+	int phase;
+	int period;
+	int relative_deadline;
+	int execution_time;
+	int complete;
+
+};
+
+struct thread_data t;
+int exit_flag = 0;
+
+void* p1_task(void *thread_arg){
+
+	while(!exit_flag){
+
+
+
+		pthread_cond_wait(&t1_cond, &t1_lock);
+
+
+		//pthread_mutex_lock(&t1_lock);
+		t.complete = 0;
+
+
+		fprintf(stdout, "Sleeping\n");
+		usleep(t.execution_time);
+
+		t.complete = 1;
+		//pthread_mutex_unlock(&t1_lock);
+
+		fprintf(stdout, "Done\n");
+
+		//pthread_yield();
+
+
+	}
+
+	fprintf(stdout, "Got exit instruction\n");
+	pthread_exit(NULL);
+	return NULL;
+}
+
+void* sched(void *thread_arg){
+
+	int tick = 0;
+
+	while(1){
+
+		if(!tick){
+			fprintf(stdout, "%d has Signal %li and %d\n", t.phase + t.period, tick, tick ? tick % (t.phase + t.period) : 0);
+			pthread_cond_signal(&t1_cond);
+		}
+
+		usleep(1);
+		tick = (tick + 50) % (t.period + t.phase);
+
+	}
+	exit_flag = 1;
+	pthread_exit(NULL);
+	return NULL;
+}
+
+int main(){
+
+	pthread_attr_init(&attr);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+	pthread_mutex_init(&t1_lock, NULL);
+	pthread_mutex_init(&t1_d_lock, NULL);
+
+	t.execution_time = 1000000;
+	t.id = 1;
+	t.period = 2000000;
+	t.phase = 0;
+	t.relative_deadline = 200000;
+	pthread_t t1, sch;
+
+	int tsa = pthread_create(&t1, &attr, p1_task, (void *) &t);
+	int sche = pthread_create(&sch, &attr, sched, (void *) &t);
+
+
+ while(1);
+    void* status;
+    pthread_join(sche, &status);
+    pthread_join(tsa, &status);
+	pthread_exit(NULL);
+}

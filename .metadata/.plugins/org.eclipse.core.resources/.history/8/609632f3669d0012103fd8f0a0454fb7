@@ -1,0 +1,46 @@
+/*
+ * parallax_gyro.h
+ *
+ *  Created on: Apr 4, 2013
+ *      Author: kulis
+ */
+#include <sys/types.h>
+#include <bcm2835.h>
+
+#define CR1 	0x20
+#define CR2 	0x21
+#define CR3 	0x22
+#define CR4 	0x23
+#define X_LSB 	0x28
+#define X_MSB 	0x29
+#define Y_LSB 	0x2A
+#define Y_MSB 	0x2B
+#define Z_LSB	0x2C
+#define Z_MSB 	0x2D
+
+#define SLAVE_ADDR 0x69
+
+#define INIT_BUFF_LEN 3
+
+int _gyro_fd = 0;
+
+char init_buff[INIT_BUFF_LEN][2] = {{CR1, 0x1F},{CR3, 0x08},{CR4, 0x80}};
+
+int init(uint8_t slave_address){
+
+	bcm2835_i2c_begin();
+	bcm2835_i2c_setSlaveAddress(slave_address);
+
+	int i = 0;
+	for(; i < INIT_BUFF_LEN; i++){
+		if(bcm2835_i2c_write(&init_buff[i]), 2) return 0;
+	}
+
+	return 1;
+}
+
+int get_x();
+int get_y();
+int get_z();
+
+int translate();

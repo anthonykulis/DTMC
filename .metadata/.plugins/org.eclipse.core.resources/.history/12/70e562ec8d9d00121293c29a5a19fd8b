@@ -1,0 +1,163 @@
+/*
+ * tt.c
+ *
+ *  Created on: Apr 4, 2013
+ *      Author: kulis
+ */
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <pthread.h>
+
+pthread_mutex_t t1_lock;
+pthread_mutex_t t2_lock;
+pthread_cond_t t1_cond;
+pthread_cond_t t2_cond;
+pthread_attr_t attr;
+pthread_cond_t t1_done;
+pthread_mutex_t runner;
+pthread_cond_t task_complete;
+
+struct thread_data {
+
+	int id;
+	int phase;
+	int period;
+	int relative_deadline;
+	int execution_time;
+	int complete;
+
+};
+
+struct thread_data t1, t2;
+pthread_cond_t waiting_tasks[4];
+int wt_size = 0;
+
+void j1_task(void *thread_arg){
+
+	while(1){
+
+
+		pthread_cond_wait(&t1_cond, &t1_lock);
+
+		t1.complete = 0;
+
+
+		fprintf(stdout, "t1 Sleeping\n");
+		usleep(t1.execution_time);
+
+		t1.complete = 1;
+
+		pthread_cond_signal(&task_complete);
+
+		fprintf(stdout, "t1 Done\n");
+	}
+
+
+}
+
+void j2_task(void *thread_arg){
+
+	while(1){
+
+		pthread_cond_wait(&t2_cond, &t2_lock);
+
+		t2.complete = 0;
+
+
+		fprintf(stdout, "t2 Sleeping\n");
+		usleep(t2.execution_time);
+
+		t2.complete = 1;
+		pthread_cond_signal(&task_complete);
+		fprintf(stdout, "t2 Done\n");
+	}
+
+}
+
+void release_agent(void *thread_arg){
+
+	int pos = 0;
+
+	while(1){
+		pthread_cond_wait(&task_complete, &t1_lock);
+
+		if(wt_size){
+			pthread_cond_t t = waiting_tasks[pos];
+			pthread_cond_signal(&t);
+			pos++;
+			wt_size--;
+		}
+		else pos = 0;
+	}
+}
+
+void sched(void *thread_arg){
+
+	int t1_tick = 0;
+	int t2_tick = 0;
+	int first_run = 1;
+	int p = 0;
+	int new_task = 0;
+
+	while(1){
+
+		if((!t1_tick && !first_run) || t1_tick == t1.phase){
+			waiting_tasks[p] = t1_cond;
+			wt_size++;
+			p = (p + 1) % 4;
+			new_task = 1;
+		}
+
+		if((!t2_tick && !first_run) || t2_tick == t2.phase){
+			waiting_tasks[p] = t2_cond;
+			wt_size++;
+			p = (p + 1) % 4;
+			new_task = 1;
+		}
+
+		if(new_task) pthread_cond_signal(&task_complete);
+		new_task = 0;
+		usleep(1000);
+		t1_tick = (t1_tick + 1) % (t1.period + t1.phase);
+		t2_tick = (t2_tick + 1) % (t2.period + t2.phase);
+
+		first_run = 1;
+		if(t1_tick == 0) t1.phase = 0;
+		if(t2_tick == 0) t2.phase = 0;
+	}
+
+
+}
+
+int main(){
+
+	pthread_attr_init(&attr);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+	pthread_mutex_init(&t1_lock, NULL);
+	pthread_mutex_init(&t2_lock, NULL);
+	pthread_mutex_init(&runner, NULL);
+
+	t1.execution_time = 10;
+	t1.id = 1;
+	t1.period = 300;
+	t1.phase = 5000;
+	t1.relative_deadline = 200;
+
+	t2.execution_time = 200;
+	t2.id = 2;
+	t2.period = 800;
+	t2.phase = 0;
+	t2.relative_deadline = 1000;
+
+	pthread_t j1, sch, j2, ra;
+
+	pthread_create(&j1, &attr, (void *) j1_task, (void *) &t1);
+	pthread_create(&j2, &attr, (void *) j2_task, (void *) &t2);
+	pthread_create(&ra, &attr, (void *) release_agent, NULL);
+	pthread_create(&sch, &attr, (void *) sched,  (void *) &t1);
+
+
+	pthread_exit(NULL);
+}
