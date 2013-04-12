@@ -9,7 +9,7 @@
 #define MOTORCONTROL_H_
 
 #include "Register.h"
-
+#include "Arduino.h"
 
 #define MOTORCONTROL_FORWARD 0
 #define MOTORCONTROL_REVERSE 1
@@ -19,7 +19,7 @@ class MotorControl {
 
 public:
 
-	MotorControl(Register *r);
+	MotorControl();
 	void update();
 
 	inline void setMode(int MODE){ _mode = MODE; }
@@ -39,6 +39,8 @@ private:
 	void _brake();
 	void _read_rc();
 	void _read_serial();
+	
+	int _prev_left, _prev_right, _prev_left_dir, _prev_right_dir;
 
 };
 

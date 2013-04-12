@@ -8,14 +8,14 @@
  *  Current state: Tested, but needs setting motor speeds and braking written, as well as implementation of acceleration and safety checks
  */
 #include "MotorControl.h"
-#include <iostream>
+#include "Arduino.h"
 
 using namespace std;
 
-MotorControl::MotorControl(Register *r){
+MotorControl::MotorControl(){
 
 	_mode = -1;
-	_r = r;
+	_r = &DataRegister;
 
 	_rf = _r->open(RIGHT_FORWARD, REG_READ_ONLY);
 	_lf = _r->open(LEFT_FORWARD, REG_READ_ONLY);
@@ -23,14 +23,15 @@ MotorControl::MotorControl(Register *r){
 	_lr = _r->open(LEFT_REVERSE, REG_READ_ONLY);
 	_br = _r->open(FULL_BRAKE, REG_READ_ONLY);
 	_a = _r->open(USE_ACCELERATION, REG_READ_ONLY);
-
+	
+	_prev_left = _prev_right = _prev_left_dir = _prev_right_dir = 0;
 
 }
 
 void MotorControl::update(){
 
 	//todo: perform any safety check
-
+	
 	switch(_r->read(SET_CONTROL_MODE)){
 
 		case I2C_MODE: break;
@@ -42,25 +43,25 @@ void MotorControl::update(){
 	/*
 	 * Get L & R speeds from registers
 	 */
-	_ld = MotorControl_FORWARD;
+	_ld = MOTORCONTROL_FORWARD;
 	_ls = _r->read(_lf);
 
 
-	if(_ls == 0x00){
+	if(!_ls){
 		_ls = _r->read(_lr);
 		_ld = !_ld;
 	}
 
-	_rd = MotorControl_FORWARD;
+	_rd = MOTORCONTROL_FORWARD;
 	_rs = _r->read(_rf);
 
-	if(_rs == 0x00){
+	if(!_rs){
 		_rs = _r->read(_rr);
 		_rd = !_rd;
 	}
 
 
-	if(_ls == 0x00 && _rs == 0x00){
+	if(!_ls && !_rs){
 		_brake();
 		return;
 	}
@@ -72,13 +73,37 @@ void MotorControl::update(){
 }
 
 void MotorControl::_set_speed(int left, int right){
-	cout << "Left Speed: " << left << " Right Speed: " << right << endl;
+
+	if(left == _prev_left && right == _prev_right) return;
+
+	Serial.print("setting speed: ");
+	Serial.print(left);
+	Serial.print(":");
+	Serial.println(right);
+
+	_prev_left = left;
+	_prev_right = right;
+
 }
 void MotorControl::_set_direction(int left, int right){
-	cout << "Left Direction: " << left << " Right Direction: " << right << endl;
+
+	if(left == _prev_left_dir && right == _prev_right_dir) return;
+
+	Serial.print("setting direction: ");
+	Serial.print(left);
+	Serial.print(":");
+	Serial.println(right);
+
+	_prev_left_dir = left;
+	_prev_right_dir = right;
+
 }
 void MotorControl::_brake(){
-	cout << "Braking" << endl;
+
+	if(_prev_left == 0 && _prev_right == 0) return;
+
+	Serial.println("braking");
+	_prev_left = _prev_right = 0;
 }
 
 void MotorControl::_read_rc(){}

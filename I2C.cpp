@@ -7,28 +7,12 @@
  *  Current state: Not tested.
  */
 
+#include "I2C.h"
 #include "Register.h"
+#include "Arduino.h"
+#include "Wire.h"
 
-I2C::I2C(Register *r){
-
-	_is_wire_active = false;
-	_r = r;
-	_i2c = _r->open(SET_I2C_ADDRESS, REG_MASTER_MODE);
-
-
-}
-
-void I2C::resetI2C(){
-
-	_i2c_add = _r.read(_i2c);
-	Wire.begin(_i2c_add);
-	Wire.onReceive(_receiveHandler);
-	Wire.onRequest(_requestHandler);
-	_is_wire_active = true;
-
-}
-
-void _receiveHandler(int numBytes){
+void receiveHandler(int numBytes){
 
 	//loop thru the request statement
 	for(int i = 0; i < numBytes; i++){
@@ -37,26 +21,47 @@ void _receiveHandler(int numBytes){
 		unsigned char c = Wire.read();
 		unsigned char val;
 
+
 		//if control register, eg set speed, need next byte and increment i
-		if(Wire.available() > 1 && _r->is_control_register(c)){
+		if(Wire.available() >= 1 && DataRegister.is_control_register(c)){
 			val = Wire.read();
 			i++;
-			reg = _r->open(c, REG_MASTER_MODE);
-			val = Wire.read();
-			_r->write(reg, val);
-			_r->close();
+			reg = DataRegister.open(c, REG_MASTER_MODE);
+			DataRegister.write(reg, val);
+
 		}
 
 		//if read register, send back value
-		else if(_r->is_read_register(c)){
-			reg = _r->open(c, REG_MASTER_MODE);
-			Wire.write(_r->read(reg));
-			_r->close();
+		else if(DataRegister.is_read_register(c)){
+			reg = DataRegister.open(c, REG_MASTER_MODE);
+			Wire.write(DataRegister.read(reg));
+			
 		}
 
+		DataRegister.close(reg);
 	}
 }
 
-void _requestHandler(){
+void requestHandler(){
 	//intentionally left blank. might implement a default behavior later
 }
+
+I2C::I2C(){
+	
+	_resetI2C();
+
+}
+
+void I2C::_resetI2C(){
+
+	_i2c = DataRegister.open(SET_I2C_ADDRESS, REG_MASTER_MODE);
+	_i2c_add = DataRegister.read(_i2c);
+	Wire.begin(_i2c_add);
+	Wire.onReceive(receiveHandler);
+	Wire.onRequest(requestHandler);
+	_is_wire_active = true;
+
+}
+
+I2C DT_Wire = I2C();
+

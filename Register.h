@@ -9,34 +9,34 @@
 #define Register_H_
 
 
-//#include "Arduino.h"
+#include "Arduino.h"
 
 //some _reg_vals values
-#define NULL_VALUE					0x00
+#define NULL_VALUE				0x00
 #define DEFAULT_I2C_ADDRESS			0x25
-#define I2C_MODE					0x00
-#define SERIAL_MODE					0x01
-#define RC_MODE						0x02
+#define I2C_MODE				0x00
+#define SERIAL_MODE				0x01
+#define RC_MODE					0x02
 #define ACCELERATION_ON				0x01
 #define ACCELERATION_OFF			0x00
 
 
 //control values for read function
-#define LEFT_FORWARD 				0x04
-#define LEFT_REVERSE 				0x05
-#define RIGHT_FORWARD 				0x06
-#define RIGHT_REVERSE				0x07
-#define FULL_BRAKE					0x08
+#define LEFT_FORWARD 				0x00
+#define LEFT_REVERSE 				0x01
+#define RIGHT_FORWARD 				0x02
+#define RIGHT_REVERSE				0x03
+#define FULL_BRAKE				0x04
 
-#define SET_I2C_ADDRESS				0x10
-#define USE_ACCELERATION			0x11
-#define SET_CONTROL_MODE			0x12
+#define SET_I2C_ADDRESS				0x05
+#define USE_ACCELERATION			0x06
+#define SET_CONTROL_MODE			0x07
 
-#define READ_BATTERY_LEVEL			0x20
-#define READ_LEFT_MOTOR_CURRENT		0x22
-#define READ_RIGHT_MOTOR_CURRENT	0x23
+#define READ_BATTERY_LEVEL			0x08
+#define READ_LEFT_MOTOR_CURRENT			0x09
+#define READ_RIGHT_MOTOR_CURRENT		0x0A
 
-#define _REG_SIZE 256
+#define _REG_SIZE 				11
 
 typedef int regd_t;
 enum {REG_READ_ONLY, REG_READ_WRITE, REG_MASTER_MODE};
@@ -56,23 +56,25 @@ public:
 
 	Register(unsigned char ADDRESS = 0x00, int MODE = 0);
 
-	regd_t open(unsigned char reg, int open_flag);
-	unsigned char read(regd_t reg_descriptor);
+	int open(unsigned char reg, int open_flag);
+	unsigned char read(int reg_descriptor);
 	int write(int reg_descriptor, unsigned char value);
-	regd_t close(regd_t reg_descriptor);
-    bool is_control_reg(unsigned char REGISTER);
-    bool is_read_reg(unsigned char REGISTER);
+	int close(int reg_descriptor);
+	bool is_control_register(unsigned char REGISTER);
+    	bool is_read_register(unsigned char REGISTER);
+
 
 private:
 
 	unsigned char _reg_vals[_REG_SIZE];
 
 	//high value regs are for master mode hook
-	regd_t _allocated_regs[_REG_SIZE * 2];
-
+	int _allocated_regs[_REG_SIZE * 2];
 	void _populate();
 	unsigned char _is_allowed_reg(unsigned char REGISTER);
 	int _is_rw_reg(unsigned char REGISTER);
+
 };
 
+extern Register DataRegister;
 #endif /* REGISTER_H_ */

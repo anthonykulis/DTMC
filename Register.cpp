@@ -6,10 +6,10 @@
  *
  *  Current state: Pretty fully tested. Added two public bool functions that still need to be tested.
  */
-
+#include "Arduino.h"
 #include "Register.h"
-#include <iostream>
-using namespace std;
+
+
 
 /*
  * Constructor
@@ -35,6 +35,8 @@ Register::Register(unsigned char ADDRESS, int MODE){
  * @param open_flag the enumerated type of the registers permissions
  * @return the register descriptor to be used in read/write/close actions
  */
+
+
 regd_t Register::open(unsigned char reg, int open_flag){
 
 	/*
@@ -50,29 +52,30 @@ regd_t Register::open(unsigned char reg, int open_flag){
 	 */
 	int of = open_flag;
 	if((++of) >> 2) return -1;
-
+	
 	//dont care in this mode. assumes developer knows what they are doing
 	if(open_flag == REG_MASTER_MODE){
-		_allocated_regs[((int) reg) + 256] = open_flag;
-		return (int) reg + 256;
+		_allocated_regs[reg + _REG_SIZE] = open_flag;
+		return (int) reg + _REG_SIZE;
 	}
 
 	//cant open same register twice or more at a time
-	if(_allocated_regs[(int) reg] != -1) return -1;
-
+	if(_allocated_regs[reg] != -1) return -1;
+	
 	//cout << "is allowed(" << (int) reg << ") " << (int)_is_allowed_reg(reg) << endl;
 	//make sure it is a register we will look at in the control loop
 	if(!_is_allowed_reg(reg)){
-		cout << "Not allowed " << (int)reg << endl;
+		//cout << "Not allowed " << (int)reg << endl;
 		return -1;
 	}
-
+	
 	//make sure if rw then its a rw register
 	if((open_flag == REG_READ_WRITE) && !_is_rw_reg(reg)) _allocated_regs[(int) reg] = -1;
 
-	_allocated_regs[(int) reg] = open_flag;
+	_allocated_regs[reg] = open_flag;
 
 	return (int) reg;
+
 }
 
 /*
@@ -83,34 +86,39 @@ regd_t Register::open(unsigned char reg, int open_flag){
  */
 unsigned char Register::read(regd_t reg_descriptor){
 
-	int rd = reg_descriptor;
+
+	int rd = reg_descriptor % _REG_SIZE;
 
 	//not opened yet
-	if(_allocated_regs[rd] == -1) return 0x00;
+	if(_allocated_regs[rd] == -1 && _allocated_regs[reg_descriptor] == -1) return 0x00;
 
 	return _reg_vals[rd];
+
 }
 
 /*
  * Allows a user to write to a register with write permissions. If in MASTER_MODE,
  * the user can write to any register
  */
-int Register::write(int reg_descriptor, unsigned char value){
+int Register::write(regd_t reg_descriptor, unsigned char value){
+
 
 	int rd = reg_descriptor;
-
+	
 	//not opened
 	if(_allocated_regs[rd] == -1) return 0;
-
+	
 	//set up size check for byte value passed
 	unsigned char sc = value >> 16;
 
 	//restrict read only registers and 2 byte size limits
 	if(_allocated_regs[rd] == REG_READ_ONLY || sc) return 0;
+	
 
-	_reg_vals[(rd > _REG_SIZE ? rd - 256 : rd)] = value;
+	_reg_vals[rd % _REG_SIZE] = value;
 
-	return sizeof(value);
+	return 1;
+
 }
 
 /*
@@ -119,7 +127,7 @@ int Register::write(int reg_descriptor, unsigned char value){
  * @param the regd_t of the register to close
  * @return the regd_t of the register just closed
  */
-regd_t Register::close(int reg_descriptor){
+regd_t Register::close(regd_t reg_descriptor){
 
 	int rd = reg_descriptor;
 
@@ -131,6 +139,7 @@ regd_t Register::close(int reg_descriptor){
 
 	//be nice
 	return rd;
+
 }
 
 bool Register::is_control_register(unsigned char REGISTER){
@@ -138,7 +147,7 @@ bool Register::is_control_register(unsigned char REGISTER){
 }
 
 bool Register::is_read_register(unsigned char REGISTER){
-	return !_is_allowed_reg(REGISTER) && is_allowed_reg(REGISTER);
+	return !_is_rw_reg(REGISTER) && _is_allowed_reg(REGISTER);
 }
 
 //be sure to define default values as you populate control values
@@ -150,7 +159,7 @@ void Register::_populate(){
 			case (int)SET_I2C_ADDRESS: 			_reg_vals[i] = DEFAULT_I2C_ADDRESS; break;
 			case (int)USE_ACCELERATION:			_reg_vals[i] = ACCELERATION_ON; break;
 			case (int)SET_CONTROL_MODE:			_reg_vals[i] = I2C_MODE; break;
-			default: 							_reg_vals[i] = NULL_VALUE;
+			default: 					_reg_vals[i] = NULL_VALUE;
 		}
 
 		_allocated_regs[i] = -1;
@@ -187,3 +196,6 @@ int Register::_is_rw_reg(unsigned char REGISTER){
 			USE_ACCELERATION == REGISTER ||
 			SET_CONTROL_MODE == REGISTER;
 }
+
+
+Register DataRegister = Register();
