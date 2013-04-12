@@ -6,7 +6,7 @@ such things as inertia sensors, but also provide userspace hooks incase the deve
 this systems uC as the primary controller. 
 
 Typical usage as an I2C slave device is to:
-
+-
     #include <Register.h>
     #include <I2C.h>
     #include <Battery.h>
@@ -22,7 +22,8 @@ Typical usage as an I2C slave device is to:
       mc.update();
       
     }
-    
+-
+
 By including these 5 classes, your I2C callback events are defined and automatically handle the register calls. MotorControl
 provides all the needed functionality to mimic the loop() event by simply calling MotorControl::update(); Detailed information
 about each class are as follows:
@@ -46,13 +47,14 @@ Class List:
   might look like Code Block A. To read the battery voltage (requires a high and low read), one's code may look similar 
   to Code Block B. Please note, Code Block B is one of those features I havent tested yet (12 Apr 2013). I assume my math in the 
   class was correct, but I never trust my math until I see the answer!
-  
+
+-
+
         //Code Block A
         Wire.beginTransmission(0x25);
         Wire.write(0x00);
         Wire.write(0xFF);
         Wire.endTransmission();
-
 
 -
 
@@ -62,6 +64,7 @@ Class List:
         Wire.low(0x09);
         unsigned char l_val = Wire.read();        
         int volts = h_val << 8 | l_val;
+-
 
   3) Battery - This class has an extern variable of SystemBattery and provides 3 primary functions: Battery::do_battery_diagnotics();
   Battery::start_charger(); and Battery::end_charging(). Each function name should be self documenting, yet, I will still 
@@ -95,6 +98,7 @@ the movement control applied. This repeats for the right registers also. So, be 
 If you wish to go from braking to full reverse, you will need to make sure FULL_BRAKE == ox00 and both LEFT_FORWARD and 
 RIGHT_FORWARD are equal to 0x00. Any left over values in these registers may preempt your intentions. Here is a code example:
 
+-
         //drive normally
         Wire.write(LEFT_FORWARD, 0x7F);
         Wire.write(RIGHT_FORWARD, 0x7F);
@@ -111,7 +115,7 @@ RIGHT_FORWARD are equal to 0x00. Any left over values in these registers may pre
         Wire.write(RIGHT_FORWARD, 0X00);
         Wire.write(LEFT_REVERSE, 0XFF);
         Wire.write(RIGHT_REVERSE, 0XFF);
-    
+- 
 
 If you have any questions, please email. Also, pay attention to my commits, this README may become out-of-date
 as I add more functionality or remove others.
