@@ -38,6 +38,25 @@ Class List:
   and allows reading and writing even if hooked by a handle of REG_READ_ONLY or REG_READ_WRITE. As of 12 April 2013,
   most registers have been tested and should perform nicely. 
   
-  2) 
+  2) I2C - Provides a simple wrapper to the Wire package found in the default Arduino SDK install. Included in this repo
+  are Wire.h, Wire.cpp, and supporting classes. Please keep these with the I2C package to simplify compiling. Also note,
+  some features of I2C detailed in the header and Register class have not yet been fully implemented. As of 12 April 2013,
+  you can pass messages to this slave and get a response w/o the need to write your own callbacks. As an example, for
+  control messages to the default I2c address (0x25), say LEFT_FORWARD (0x00) and setting speed to 255, a typical message might look like:
+  
+        Wire.beginTransmission(0x25);
+        Wire.write(ox00);
+        Wire.write(0xFF);
+        Wire.endTransmission();
 
-
+    To read say the battery voltage (requires a high and low read), ones code may look similar to:
+    
+        Wire.write(0x08);
+        unsigned char h_val = Wire.read();
+        Wire.low(0x09);
+        unsigned char l_val = Wire.read();
+        
+        int volts = h_val << 8 | l_val;
+    
+    Please note, one of those features I havent tested yet (12 Apr 2013) is this read. I assume my math in the 
+    class was correct, but I never trust my math until I see the answer!
