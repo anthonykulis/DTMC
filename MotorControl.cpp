@@ -44,10 +44,14 @@ MotorControl::MotorControl(){
  */ 
 void MotorControl::update(){
 
+	/* Error in here. Think it is a locking error. 
 	_b->do_battery_diagnostics();
 	
-	if(_b->is_battery_recharging()) return _brake();
-
+	if(_b->is_battery_recharging()){
+		Serial.println("battery recharging");
+		return _brake();
+	}
+	*/
 	//todo: perform any safety check
 	
 	//how to handle control messages - note, even if not using i2c, user still can access read registers from i2c
@@ -81,7 +85,7 @@ void MotorControl::update(){
 	//no left forward speed? check left reverse then
 	if(!_ls){
 		_ls = _r->read(_lr);
-		_ld = !_ld;
+		_ld = MOTORCONTROL_REVERSE;
 	}
 	
 	//get right forward speed
@@ -91,7 +95,8 @@ void MotorControl::update(){
 	//no right forward? get right reverse then
 	if(!_rs){
 		_rs = _r->read(_rr);
-		_rd = !_rd;
+		_rd = MOTORCONTROL_REVERSE;
+
 	}
 		
 	//set the direction and speed of each motor

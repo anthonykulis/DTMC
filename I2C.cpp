@@ -17,26 +17,31 @@ void receiveHandler(int numBytes){
 
 	//loop thru the request statement
 	for(int i = 0; i < numBytes; i++){
-
+		
+		Serial.println("recv event");
 		regd_t reg;
 		unsigned char c = Wire.read();
 		unsigned char val;
 
-
 		//if control register, eg set speed, need next byte and increment i
 		if(Wire.available() >= 1 && DataRegister.is_control_register(c)){
+			
 			val = Wire.read();
 			i++;
 			reg = DataRegister.open(c, REG_MASTER_MODE);
-			DataRegister.write(reg, val);
+			DataRegister.write(reg, (unsigned char) val);
+
 
 		}
 
 		//if read register, send back value
 		else if(DataRegister.is_read_register(c)){
+			Serial.print("I2C read: ");
+			Serial.println(c);
 			reg = DataRegister.open(c, REG_MASTER_MODE);
 			Wire.write(DataRegister.read(reg));
-			
+			Serial.print("Wrote: ");
+			Serial.println(DataRegister.read(reg));
 		}
 
 		DataRegister.close(reg);

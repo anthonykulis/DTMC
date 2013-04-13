@@ -29,11 +29,16 @@ void Battery::do_battery_diagnostics(){
 
 	_last_sample_time = millis();
 	_volts = analogRead(ANALOG_BATTERY_INPUT);
+	Serial.print("_volts: ");
+	Serial.println(_volts);
 
 	//naive auto recharge -- needs expansion?
 	_update_ac();
 	if(_auto_recharge){
-		if(_volts < LOW_BATTERY_VOLTAGE) start_charging();
+		if(_volts < LOW_BATTERY_VOLTAGE){
+			Serial.println("auto recharge started");			
+			start_charging();
+		}
 		else if(_volts >= NOMINAL_BATTERY_VOLTAGE) end_charging();
 	}
 
@@ -44,7 +49,7 @@ void Battery::do_battery_diagnostics(){
 	 * NOTE: NEED TO CHECK FOR LACK OF VOLTAGE CHANGE IN THIS TOO. NOT QUITE SURE WHAT TO CHECK, A RANGE (EG 10%) OR EXACT VAL
 	 */
 	//check for re-charging error
-	if(_is_recharging && _initial_recharging_time + CHARGER_TIMEOUT > _last_sample_time && _volts == _starting_voltage){
+	if(_is_recharging && _initial_recharging_time + CHARGER_TIMEOUT > _last_sample_time && _volts <= _starting_voltage){
 		
 		_has_recharging_error = true;
 		
@@ -56,9 +61,11 @@ void Battery::do_battery_diagnostics(){
 		end_charging();
 	}
 
+
 	unsigned char high = _volts >> 8;
-	unsigned char low = _volts & 0x0011;
+	unsigned char low = _volts & 0x00FF;
 	
+ 
 	//write the voltage of the battery
 	regd_t d = _r->open(READ_BATTERY_LEVEL_HIGH, REG_MASTER_MODE);
 	_r->write(d, high);

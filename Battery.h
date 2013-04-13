@@ -26,8 +26,8 @@ enum { NOT_CHARGING, CHARGING };
 //7.2v -> 5v gives a resistor ratio of .44 and a decimal value of 6.3v of
 //649. so, anyways, if my math is correct, its best to just set this to
 //your system.
-#define NOMINAL_BATTERY_VOLTAGE 487
-#define LOW_BATTERY_VOLTAGE 410
+#define NOMINAL_BATTERY_VOLTAGE 340
+#define LOW_BATTERY_VOLTAGE 300
 
 class Battery {
 

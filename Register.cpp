@@ -110,10 +110,10 @@ int Register::write(regd_t reg_descriptor, unsigned char value){
 	if(_allocated_regs[rd] == -1) return 0;
 	
 	//set up size check for byte value passed
-	unsigned char sc = value >> 16;
+	//unsigned char sc = value >> 16;
 
 	//restrict read only registers and 2 byte size limits
-	if(_allocated_regs[rd] == REG_READ_ONLY || sc) return 0;
+	if(_allocated_regs[rd] == REG_READ_ONLY) return 0;
 	
 
 	_reg_vals[rd % _REG_SIZE] = value;
